@@ -3,5 +3,5 @@
 ## RACE To Do
 
 ## URBAN To Do
-1) SIDE COLOR NEEDS TO BE TUNED
-2) TURNING TO RIGHT OR LEFT NEEDS TO BE TUNED
+1) tune side color for both urban tracks (different colors).
+2) tune turning to right and left.
