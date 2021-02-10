@@ -39,9 +39,8 @@ while(True):
     car.getData()
     sensors = car.getSensors() 
     frame = car.getImage()
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     white_mask = cv2.inRange(frame, np.array([240,240,240]), np.array([255,255,255])) * (1-car_mask)
-    side_mask = cv2.inRange(hsv_frame, np.array([80,15,135]), np.array([255,30,180])) * (1-car_mask)
+    side_mask = cv2.inRange(frame, np.array([130,0,108]), np.array([160,160,200])) * (1-car_mask)
 
     # vertical lines
     lines = utils.detect_lines(utils.region_of_interest(white_mask))
@@ -67,7 +66,7 @@ while(True):
     error = REFRENCE - CURRENT_PXL 
     steer = -(kp * error)
     car.setSteering(steer)
-    car.setSpeed(20)
+    car.setSpeed(30)
 
     if horiz_detected:
         car.setSteering(0)
@@ -81,25 +80,25 @@ while(True):
             print('mean_pix :', mean_pix)
             utils.go_back(car)
             if mean_pix < 128:
-                utils.turn_the_car(car,-100,9)
+                utils.turn_the_car(car,-100,10)
             else:
-                utils.turn_the_car(car,100,9)
+                utils.turn_the_car(car,100,10)
             
         elif sign_state == 'left':
-            utils.turn_the_car(car,-65,9.5)
+            utils.turn_the_car(car,-60,10)
             sign_state == 'nothing'
 
         elif sign_state == 'straight':
-            utils.turn_the_car(car,0,10.5)
+            utils.turn_the_car(car,0,12)
             sign_state == 'nothing'
 
         elif sign_state == 'right':
-            utils.turn_the_car(car,65,9.5)
+            utils.turn_the_car(car,60,10)
             sign_state == 'nothing'
 
         sign_state = 'nothing'
 
-    if sensors[1] < 500:
+    if sensors[1] < 700:
         ret = utils.stop_the_car(car)
         print('side_pix :', side_pix)
         time.sleep(3)
