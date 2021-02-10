@@ -3,7 +3,7 @@ import numpy as np
 import time
 from tensorflow.keras.models import load_model
 
-sign_model = load_model('sign_model_v3.h5')
+sign_model = load_model('best_model.h5')
 
 def detect_lines(image):
     # tuning min_threshold, minLineLength, maxLineGap is a trial and error process by hand
@@ -109,13 +109,13 @@ def detect_sign(frame, white_mask):
         points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         sorted_points = sorted(points, key=len)
 
-        if cv2.contourArea(sorted_points[-1])>25:
+        if cv2.contourArea(sorted_points[-1])>10:
             x,y,w,h = cv2.boundingRect(sorted_points[-1])
             if (x>5) and (x+w<251) and (y>5) and (y+h<251):
-                sign = white_mask[y:y+h,x:x+w]   
-                sign = cv2.resize(sign, (25,25))
+                sign = frame[y:y+h,x:x+w]   
+                sign = cv2.resize(sign, (25,25))/255
                 frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,255),2)
-                return types[np.argmax(sign_model.predict(sign.reshape(1,25,25,1)))]
+                return types[np.argmax(sign_model.predict(sign.reshape(1,25,25,3)))]
             else:
                 return 'nothing' 
         else:
