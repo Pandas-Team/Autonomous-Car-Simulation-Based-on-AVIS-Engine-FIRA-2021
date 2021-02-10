@@ -39,8 +39,9 @@ while(True):
     car.getData()
     sensors = car.getSensors() 
     frame = car.getImage()
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     white_mask = cv2.inRange(frame, np.array([240,240,240]), np.array([255,255,255])) * (1-car_mask)
-    side_mask = cv2.inRange(frame, np.array([100,110,100]), np.array([155,160,160]))
+    side_mask = cv2.inRange(hsv_frame, np.array([80,15,135]), np.array([255,30,180])) * (1-car_mask)
 
     # vertical lines
     lines = utils.detect_lines(utils.region_of_interest(white_mask))
@@ -114,52 +115,12 @@ while(True):
              np.concatenate([cv2.cvtColor(two_line_mask, cv2.COLOR_GRAY2BGR),cv2.cvtColor(side_mask, cv2.COLOR_GRAY2BGR)],0)],1)
 
     cv2.imshow('car\'s perception', result)   
-    '''
-    if ((sensors[2]!=1500 or sensors[1]!=1500) and (position=='right')):
-        error = REFRENCE - SECOND_PXL 
-
-    elif ((sensors[0]!=1500 or sensors[1]!=1500) and (position=='left')):
-        error = REFRENCE - SECOND_PXL 
-
-    else:
-        error = REFRENCE - CURRENT_PXL 
-
-    integral = integral + error * dt
-    if (ki * integral) > 10:
-        integral = 10/ki
-    derivative = (error - previous_error) / dt
-
-    # if (sensors!=[1500,1500,1500]):
-    #     integral = 0
-    #     REFRENCE = 256-REFRENCE2
-
-    # else:
-    #     REFRENCE = 128
-
-    steer = -(kp * error + ki * integral + kd * derivative)
-    '''
-
-
-
-
-    # try:
-    #     center_coordinates = (int(mean_pix), 120) 
-    #     radius = 5
-    #     color = (255, 0, 0) 
-    #     thickness = 3
-        
-    #     image = cv2.circle(frame, center_coordinates, radius, color, thickness) 
-    # except:
-    #     pass
-    # white_mask = cv2.cvtColor(white_mask, cv2.COLOR_GRAY2BGR)
-    # res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
-    # result = np.concatenate([frame,white_mask,res], 1)
-    # cv2.imshow('result',result)        
-
 
     key = cv2.waitKey(1)
     if key == ord('w'):
-        cv2.imwrite('./new_roi.jpg', utils.region_of_interest(white_mask)*255)
+        frame = car.getImage()
+        cv2.imwrite('./output_frame.png', frame)
+        # cv2.imwrite('./new_roi.jpg', utils.region_of_interest(white_mask)*255)
 
 #A brief sleep to make sure everything 
     

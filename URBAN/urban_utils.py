@@ -103,12 +103,13 @@ def detect_side(side_mask):
 
 def detect_sign(frame, white_mask):
     types = ['left', 'straight', 'right']
-    mask = cv2.inRange(frame, np.array([100,100,0]), np.array([255,255,90]))
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv_frame, np.array([100,170,90]), np.array([160,220,220]))
     try:
         points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         sorted_points = sorted(points, key=len)
 
-        if cv2.contourArea(sorted_points[-1])>10:
+        if cv2.contourArea(sorted_points[-1])>25:
             x,y,w,h = cv2.boundingRect(sorted_points[-1])
             if (x>5) and (x+w<251) and (y>5) and (y+h<251):
                 sign = white_mask[y:y+h,x:x+w]   
