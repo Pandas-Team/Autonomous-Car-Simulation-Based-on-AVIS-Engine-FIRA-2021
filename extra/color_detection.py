@@ -50,7 +50,7 @@ while True:
     # plotting ROI
     result = cv2.rectangle(result,(0,140),(512,190),(0,255,255),1)
     what_to_show = np.vstack((frame, result))
-    print(frame.shape, result.shape, mask.shape)
+#     print(frame.shape, result.shape, mask.shape)
     # cv2.imshow('frame',frame)
     # cv2.imshow('result',result)
     cv2.imshow('mask', mask)
