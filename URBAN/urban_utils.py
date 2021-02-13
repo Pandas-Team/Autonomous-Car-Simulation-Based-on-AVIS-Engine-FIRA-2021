@@ -101,15 +101,14 @@ def detect_side(side_mask):
     side_pix = np.mean(np.where(side_mask[150:190, :]>0), axis=1)[1]
     return side_pix
 
-def detect_sign(frame, white_mask):
+def detect_sign(frame, hsv_frame):
     types = ['left', 'straight', 'right']
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv_frame, np.array([100,170,90]), np.array([160,220,220]))
     try:
         points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         sorted_points = sorted(points, key=len)
 
-        if cv2.contourArea(sorted_points[-1])>10:
+        if cv2.contourArea(sorted_points[-1])>30:
             x,y,w,h = cv2.boundingRect(sorted_points[-1])
             if (x>5) and (x+w<251) and (y>5) and (y+h<251):
                 sign = frame[y:y+h,x:x+w]   
@@ -123,6 +122,17 @@ def detect_sign(frame, white_mask):
     except:
         return 'nothing'
 
+def red_sign_state(red_mask):
+    points, _ = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    sorted_points = sorted(points, key=len)
+    try:
+        red_area = cv2.contourArea(sorted_points[-1])
+        if red_area > 40:
+            return True
+        else:
+            return False
+    except:
+        return False
     
 def stop_the_car(car):
     car.setSteering(0)

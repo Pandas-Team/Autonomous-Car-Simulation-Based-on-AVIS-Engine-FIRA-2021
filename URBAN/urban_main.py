@@ -39,8 +39,10 @@ while(True):
     car.getData()
     sensors = car.getSensors() 
     frame = car.getImage()
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     white_mask = cv2.inRange(frame, np.array([240,240,240]), np.array([255,255,255])) * (1-car_mask)
     side_mask = cv2.inRange(frame, np.array([130,0,108]), np.array([160,160,200])) * (1-car_mask)
+    red_mask = cv2.inRange(hsv_frame, np.array([140,70,0]), np.array([255,255,255])) * (1-car_mask)
 
     # vertical lines
     lines = utils.detect_lines(utils.region_of_interest(white_mask))
@@ -54,7 +56,8 @@ while(True):
     side_pix = utils.detect_side(side_mask)
     
     # detecting sign type
-    sign = utils.detect_sign(frame, white_mask)
+    red_sign = utils.red_sign_state(red_mask)
+    sign = utils.detect_sign(frame, hsv_frame)
     if sign == 'left':
         sign_state = 'left'
     elif sign == 'straight':
@@ -74,29 +77,41 @@ while(True):
         ret = utils.stop_the_car(car)
         time.sleep(3)
         
-        if sign_state == 'nothing':
-            # turn based on mean_pix
-            mean_pix = utils.turn_where(white_mask)
-            print('mean_pix :', mean_pix)
-            utils.go_back(car)
-            if mean_pix < 128:
-                utils.turn_the_car(car,-100,10)
-            else:
-                utils.turn_the_car(car,100,10)
-            
-        elif sign_state == 'left':
-            utils.turn_the_car(car,-60,10)
-            sign_state == 'nothing'
+        if not red_sign:
+            if sign_state == 'nothing':
+                # turn based on mean_pix
+                mean_pix = utils.turn_where(white_mask)
+                print('mean_pix :', mean_pix)
+                utils.go_back(car)
+                if mean_pix < 128:
+                    utils.turn_the_car(car,-100,10)
+                else:
+                    utils.turn_the_car(car,100,10)
+                
+            elif sign_state == 'left':
+                if side_pix > 128:
+                    utils.turn_the_car(car,-45,13)
+                else:
+                    utils.turn_the_car(car,-50,12)
+                sign_state == 'nothing'
 
-        elif sign_state == 'straight':
-            utils.turn_the_car(car,0,12)
-            sign_state == 'nothing'
+            elif sign_state == 'straight':
+                utils.turn_the_car(car,0,12)
+                sign_state == 'nothing'
 
-        elif sign_state == 'right':
-            utils.turn_the_car(car,60,10)
-            sign_state == 'nothing'
+            elif sign_state == 'right':
+                if side_pix > 128:
+                    utils.turn_the_car(car,60,10)
+                else:
+                    utils.turn_the_car(car,70,11)
+                
+                sign_state == 'nothing'
 
-        sign_state = 'nothing'
+            sign_state = 'nothing'
+        
+        else:
+            print('red sign detected. stopping the car ...')
+            break
 
     if sensors[1] < 700:
         ret = utils.stop_the_car(car)

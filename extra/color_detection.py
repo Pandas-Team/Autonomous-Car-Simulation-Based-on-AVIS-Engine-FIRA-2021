@@ -28,9 +28,9 @@ while True:
     upper = np.array([high_h, high_s, high_v])
     lower = np.array([low_h, low_s, low_v])
 
-    frame = cv2.imread('./urban_views.png')
+    frame = cv2.imread('./red_color.png')
     hsv_frame = frame
-    # hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # hsv_frame = cv2.blur(hsv_frame,(6,6))
     mask = cv2.inRange(hsv_frame, lower, upper)
     # mask = cv2.GaussianBlur(mask , (7,7), 0)
