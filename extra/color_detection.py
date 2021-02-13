@@ -1,5 +1,10 @@
 import cv2
 import numpy as np
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--image', type = str, default = 'urban_views.png' , help = 'Choose the name of the image you want.')
+args = parser.parse_args()
+
 
 def nothing(x):
     pass
@@ -28,7 +33,7 @@ while True:
     upper = np.array([high_h, high_s, high_v])
     lower = np.array([low_h, low_s, low_v])
 
-    frame = cv2.imread('./red_color.png')
+    frame = cv2.imread(args.image)
     hsv_frame = frame
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # hsv_frame = cv2.blur(hsv_frame,(6,6))
@@ -44,11 +49,14 @@ while True:
 
     # plotting ROI
     result = cv2.rectangle(result,(0,140),(512,190),(0,255,255),1)
-    cv2.imshow('frame',frame)
-    cv2.imshow('result',result)
+    what_to_show = np.vstack((frame, result))
+    print(frame.shape, result.shape, mask.shape)
+    # cv2.imshow('frame',frame)
+    # cv2.imshow('result',result)
     cv2.imshow('mask', mask)
     # cv2.imshow('frame',frame[150:190, :])
     # cv2.imshow('mask', mask[150:190, :])
+    cv2.imshow('frame + result + mask', what_to_show)
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
