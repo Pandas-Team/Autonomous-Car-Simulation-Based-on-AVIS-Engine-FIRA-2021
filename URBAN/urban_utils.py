@@ -73,7 +73,7 @@ def region_of_interest(image):
     return masked_image
 
 def horiz_lines(mask):
-    roi = mask[150:170, 96:160]
+    roi = mask[160:180, 96:160]
     try:
         lines = detect_lines(roi)
         lines = lines.reshape(-1,2,2)
@@ -127,7 +127,8 @@ def red_sign_state(red_mask):
     sorted_points = sorted(points, key=len)
     try:
         red_area = cv2.contourArea(sorted_points[-1])
-        if red_area > 40:
+        if red_area > 50:
+            print('red sign detected!')
             return True
         else:
             return False
@@ -151,7 +152,7 @@ def turn_the_car(car,s,t):
 
 def go_back(car):
     time1 = time.time()
-    while((time.time()-time1)<3):
+    while((time.time()-time1)<4):
         car.getData()
         car.setSpeed(-15)
     car.setSpeed(0)

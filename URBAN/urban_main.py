@@ -96,12 +96,12 @@ while(True):
                 sign_state == 'nothing'
 
             elif sign_state == 'straight':
-                utils.turn_the_car(car,0,12)
+                utils.turn_the_car(car,0,11)
                 sign_state == 'nothing'
 
             elif sign_state == 'right':
                 if side_pix > 128:
-                    utils.turn_the_car(car,60,10)
+                    utils.turn_the_car(car,65,9.5)
                 else:
                     utils.turn_the_car(car,70,11)
                 
