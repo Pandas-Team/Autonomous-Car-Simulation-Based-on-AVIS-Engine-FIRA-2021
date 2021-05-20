@@ -1,12 +1,13 @@
 # @ 2020, Copyright Amirmohammad Zarif
 # Compatible with firasimulator version 1.0.1 or higher
-import FiraAuto
+import AVISEngine
 import time
 import cv2
+import numpy as np
 from functions import *
 from time import sleep
 #Calling the class
-car = FiraAuto.car()
+car = AVISEngine.car()
 
 #connecting to the server (Simulator)
 car.connect("127.0.0.1", 25001)
@@ -63,7 +64,7 @@ try:
             frame = car.getImage()
             
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            hsv_frame = cv2.medianBlur(hsv_frame,(6,6))
+            hsv_frame = cv2.medianBlur(hsv_frame, 7)
 
             mask = cv2.inRange(hsv_frame, np.array([100,8,27]), np.array([117,50,52]))
             mask[0:110,:]=0
@@ -98,12 +99,6 @@ try:
             except:
                 pass
             
-            cv2.imshow('frame',frame)
-            cv2.imshow('right lane mask',right_lane_mask)
-            cv2.imshow('left lane mask',left_lane_mask)
-            cv2.imshow('obstacle mask',obstacle_res)
-            cv2.imshow('yellow mask',yellow_mask)
-            
 
             CURRENT_PXL = np.mean(np.where(right_lane_mask[120:150,:]>0), axis=1)[1]
             SECOND_PXL = np.mean(np.where(left_lane_mask[120:150,:]>0), axis=1)[1]
@@ -111,14 +106,23 @@ try:
             if np.isnan(CURRENT_PXL): CURRENT_PXL = 128
             if np.isnan(SECOND_PXL): SECOND_PXL = 128
 
-            a,slope = detect_yellow_line(frame)
+            direction_s,slope = detect_yellow_line(frame)
 
             if slope<0:
                 position = 'left'
             else:
                 position = 'right'
-            cv2.putText(a, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.imshow('yellow line', a)
+            
+            cv2.putText(direction_s, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+            
+            # ImShow
+            show_img = np.concatenate((frame, direction_s), axis=1)
+            h1_axis = np.concatenate((left_lane_mask, right_lane_mask), axis=1)
+            h2_axis = np.concatenate((obstacle_res, yellow_mask), axis=1)
+            show_mask = np.concatenate((h1_axis, h2_axis), axis=0) 
+
+            cv2.imshow('img',show_img)
+            cv2.imshow('info',show_mask)
             key = cv2.waitKey(1)
             # if key == ord('w'):
             #     cv2.imwrite('./obstacle_frame.jpg', frame)
