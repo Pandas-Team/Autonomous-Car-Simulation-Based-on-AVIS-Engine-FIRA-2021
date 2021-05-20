@@ -50,30 +50,34 @@ try:
         # steer = -(kp * error + ki * integral + kd * derivative)
         steer = -(kp * error)
         # print(steer)
-        car.setSteering(steer)
+        
         counter = counter + 1
+        
         car.setSpeed(60)
+        car.setSteering(steer)
+
         car.getData()
+
         if(counter > 4):
             sensors = car.getSensors() 
             frame = car.getImage()
             
-
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv_frame, np.array([20,0,115]), np.array([50,255,130]))
+            hsv_frame = cv2.medianBlur(hsv_frame,(6,6))
+
+            mask = cv2.inRange(hsv_frame, np.array([100,8,27]), np.array([117,50,52]))
             mask[0:110,:]=0
             points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             sorted_points = sorted(points, key=len)
 
-            main_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-1]], color=(255))
-            second_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-2]], color=(255))
-            obstacle_mask = cv2.inRange(frame, np.array([170,170,160]), np.array([255,190,180]))
-            obstacle_mask2 = cv2.inRange(frame, np.array([104,88,77]), np.array([255,211,93]))
-            obstacle_res = cv2.bitwise_or(obstacle_mask, obstacle_mask2)
-
-            hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            hsv_frame = cv2.blur(hsv_frame,(6,6))
-            yellow_mask = cv2.inRange(hsv_frame, np.array([0,95,0]), np.array([31,255,255]))
+            right_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-1]], color=(255))
+            left_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-2]], color=(255))
+            obstacle_mask = cv2.inRange(frame, np.array([70,4,93]), np.array([115,16,150]))
+            # obstacle_mask2 = cv2.inRange(frame, np.array([104,88,77]), np.array([255,211,93]))
+            obstacle_res = obstacle_mask
+            # obstacle_res = cv2.bitwise_or(obstacle_mask, obstacle_mask2)
+            
+            yellow_mask = cv2.inRange(hsv_frame, np.array([28,115,154]), np.array([31,180,255]))
 
 
             points, _ = cv2.findContours(obstacle_res, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -93,16 +97,16 @@ try:
                     frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
             except:
                 pass
-
+            
             cv2.imshow('frame',frame)
-            cv2.imshow('right lane mask',main_mask)
-            cv2.imshow('left lane mask',second_mask)
+            cv2.imshow('right lane mask',right_lane_mask)
+            cv2.imshow('left lane mask',left_lane_mask)
             cv2.imshow('obstacle mask',obstacle_res)
             cv2.imshow('yellow mask',yellow_mask)
             
 
-            CURRENT_PXL = np.mean(np.where(main_mask[120:150,:]>0), axis=1)[1]
-            SECOND_PXL = np.mean(np.where(second_mask[120:150,:]>0), axis=1)[1]
+            CURRENT_PXL = np.mean(np.where(right_lane_mask[120:150,:]>0), axis=1)[1]
+            SECOND_PXL = np.mean(np.where(left_lane_mask[120:150,:]>0), axis=1)[1]
 
             if np.isnan(CURRENT_PXL): CURRENT_PXL = 128
             if np.isnan(SECOND_PXL): SECOND_PXL = 128
