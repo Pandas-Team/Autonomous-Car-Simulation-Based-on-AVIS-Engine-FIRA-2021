@@ -70,6 +70,7 @@ def region_of_interest(image):
 
     cv2.fillPoly(mask, polygon, 255)
     masked_image = image * (mask)
+    masked_image[:170,:]=0
     return masked_image
 
 def horiz_lines(mask):
@@ -150,9 +151,9 @@ def turn_the_car(car,s,t):
         car.setSteering(s)
         car.setSpeed(15)
 
-def go_back(car):
+def go_back(car, t):
     time1 = time.time()
-    while((time.time()-time1)<4):
+    while((time.time()-time1)<t):
         car.getData()
         car.setSpeed(-15)
     car.setSpeed(0)

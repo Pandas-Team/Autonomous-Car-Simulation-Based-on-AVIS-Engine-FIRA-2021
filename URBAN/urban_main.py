@@ -1,11 +1,11 @@
-import FiraAuto
+import AVISEngine
 import cv2
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 import urban_utils as utils
 
-car = FiraAuto.car()
+car = AVISEngine.car()
 car.connect("127.0.0.1", 25001)
 
 # variables
@@ -43,7 +43,7 @@ while(True):
     white_mask = cv2.inRange(frame, np.array([240,240,240]), np.array([255,255,255])) * (1-car_mask)
     side_mask = cv2.inRange(frame, np.array([130,0,108]), np.array([160,160,200])) * (1-car_mask)
     red_mask = cv2.inRange(hsv_frame, np.array([140,70,0]), np.array([255,255,255])) * (1-car_mask)
-
+    
     # vertical lines
     lines = utils.detect_lines(utils.region_of_interest(white_mask))
     two_line_mask, CURRENT_PXL = utils.mean_lines(white_mask, lines)
@@ -82,10 +82,18 @@ while(True):
                 # turn based on mean_pix
                 mean_pix = utils.turn_where(white_mask)
                 print('mean_pix :', mean_pix)
-                utils.go_back(car)
+    
                 if mean_pix < 128:
-                    utils.turn_the_car(car,-100,10)
+                    if side_pix > 128:
+                        utils.go_back(car,4)
+                        utils.turn_the_car(car,-100,10)
+                    else:
+                        utils.turn_the_car(car,-80,8)
                 else:
+                    if side_pix < 128:
+                        utils.go_back(car,8)
+                    else:
+                        utils.go_back(car,4)
                     utils.turn_the_car(car,100,10)
                 
             elif sign_state == 'left':
