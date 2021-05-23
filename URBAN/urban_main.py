@@ -1,11 +1,11 @@
-import FiraAuto
+import AVISEngine
 import cv2
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 import urban_utils as utils
 
-car = FiraAuto.car()
+car = AVISEngine.car()
 car.connect("127.0.0.1", 25001)
 
 # variables
@@ -68,7 +68,7 @@ while(True):
 
     error = REFRENCE - CURRENT_PXL 
     steer = -(kp * error)
-    car.setSteering(steer)
+    car.setSteering(int(steer))
     car.setSpeed(30)
 
     if horiz_detected:
@@ -118,7 +118,9 @@ while(True):
         print('side_pix :', side_pix)
         time.sleep(3)
         if side_pix > 128:
-            utils.turn_the_car(car,-100,4)
+            utils.turn_the_car(car,-100,5.5)
+            utils.turn_the_car(car,100,6.5)
+            utils.turn_the_car(car,-100,2.5)
         else:
             utils.turn_the_car(car,100,4) 
         
