@@ -104,7 +104,8 @@ def detect_side(side_mask):
 
 def detect_sign(frame, hsv_frame):
     types = ['left', 'straight', 'right']
-    mask = cv2.inRange(hsv_frame, np.array([100,170,90]), np.array([160,220,220]))
+    mask = cv2.inRange(hsv_frame, np.array([100,160,90]), np.array([160,220,220]))
+    mask[:30,:]=0
     try:
         points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         sorted_points = sorted(points, key=len)

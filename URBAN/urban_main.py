@@ -4,6 +4,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import urban_utils as utils
+np.seterr(all="ignore")
 
 car = AVISEngine.car()
 car.connect("127.0.0.1", 25001)
@@ -85,7 +86,7 @@ while(True):
     
                 if mean_pix < 128:
                     if side_pix > 128:
-                        utils.go_back(car,4)
+                        utils.go_back(car,4.5)
                         utils.turn_the_car(car,-100,10)
                     else:
                         utils.turn_the_car(car,-80,8)
@@ -93,7 +94,7 @@ while(True):
                     if side_pix < 128:
                         utils.go_back(car,8)
                     else:
-                        utils.go_back(car,4)
+                        utils.go_back(car,4.5)
                     utils.turn_the_car(car,100,10)
                 
             elif sign_state == 'left':
