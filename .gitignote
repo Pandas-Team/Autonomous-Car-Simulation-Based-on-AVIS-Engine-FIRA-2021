@@ -3,5 +3,8 @@
 extra/outputs
 extra/*png
 extra/*npy
+outputs/
+outputs/*
+**/.ipynb_checkpoints/
 *.npy
 *.png

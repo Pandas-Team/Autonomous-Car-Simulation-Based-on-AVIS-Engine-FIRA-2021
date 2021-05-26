@@ -137,3 +137,20 @@ def bypass_obstacle(position):
         lane_change_to_left()
     else:
         lane_change_to_right()
+
+
+def interval_avg(x,y):
+    num_samples = 5
+    step = (x.max() - x.min()) // num_samples
+#     intervals = np.
+    x = np.sort(x)
+    y = np.sort(y)
+    intervals = np.arange(x.min(), x.max(), step)
+    avgs_x = []
+    avgs_y = []
+    for i, inter in enumerate(intervals[:-1]):
+        avg_y = np.mean(y[(x<intervals[i+1]) & (x>intervals[i])])
+        avg_x = np.mean(x[(x<intervals[i+1]) & (x>intervals[i])])
+        avgs_x.append(avg_x)
+        avgs_y.append(avg_y)
+    return [np.array(avgs_x), np.array(avgs_y)]
