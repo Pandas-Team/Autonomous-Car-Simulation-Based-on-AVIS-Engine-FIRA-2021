@@ -140,9 +140,10 @@ def bypass_obstacle(position):
 
 
 def interval_avg(x,y):
-    num_samples = 5
+    num_samples = 10
+    if not x.size:
+        return None
     step = (x.max() - x.min()) // num_samples
-#     intervals = np.
     x = np.sort(x)
     y = np.sort(y)
     intervals = np.arange(x.min(), x.max(), step)
@@ -154,3 +155,15 @@ def interval_avg(x,y):
         avgs_x.append(avg_x)
         avgs_y.append(avg_y)
     return [np.array(avgs_x), np.array(avgs_y)]
+
+def find_position(white_where, yellow_where):
+    if (white_where > 0) and (yellow_where > 0):
+        pos = 1
+    elif (white_where < 0) and (yellow_where > 0):
+        pos = 2
+    elif (white_where > 0) and (yellow_where < 0):
+        pos = 3
+    elif (white_where < 0) and (yellow_where < 0):
+        pos = 4
+    return pos
+    

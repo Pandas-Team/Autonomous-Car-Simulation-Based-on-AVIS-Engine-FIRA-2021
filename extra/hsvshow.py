@@ -14,6 +14,6 @@ else:
 hsv_frame = frame
 hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 hsv_frame = cv2.medianBlur(hsv_frame, 7)
-hsv_frame = cv2.medianBlur(hsv_frame, 5)
+# hsv_frame = cv2.medianBlur(hsv_frame, 5)
 plt.imshow(hsv_frame)
 plt.show()

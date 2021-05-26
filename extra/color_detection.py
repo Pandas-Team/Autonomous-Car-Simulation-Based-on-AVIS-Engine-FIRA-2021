@@ -40,7 +40,7 @@ while True:
     hsv_frame = frame
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     hsv_frame = cv2.medianBlur(hsv_frame, 7)
-    hsv_frame = cv2.medianBlur(hsv_frame, 5)
+    # hsv_frame = cv2.medianBlur(hsv_frame, 5)
     # hsv_frame = cv2.blur(hsv_frame,(6,6))
     mask = cv2.inRange(hsv_frame, lower, upper)
     # mask = cv2.GaussianBlur(mask , (7,7), 0)

@@ -90,12 +90,15 @@ try:
             right_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-1]], color=(255))
             left_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-2]], color=(255))
             obstacle_mask = cv2.inRange(frame, np.array([70,4,93]), np.array([115,16,150]))
+            
             # obstacle_mask2 = cv2.inRange(frame, np.array([104,88,77]), np.array([255,211,93]))
             obstacle_res = obstacle_mask
             # obstacle_res = cv2.bitwise_or(obstacle_mask, obstacle_mask2)
             
             yellow_mask = cv2.inRange(hsv_frame, np.array([28,115,154]), np.array([31,180,255]))
-
+            white_lane_mask = cv2.inRange(hsv_frame, np.array([0, 0, 210]), np.array([51,18,255]))
+            white_lane_mask[0:100] = 0 #Apply ROI
+            lane_mask = cv2.bitwise_or(yellow_mask, white_lane_mask)
 
             points, _ = cv2.findContours(obstacle_res, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             sorted_points = sorted(points, key=len)
@@ -136,9 +139,11 @@ try:
             h1_axis = np.concatenate((left_lane_mask, right_lane_mask), axis=1)
             h2_axis = np.concatenate((obstacle_res, yellow_mask), axis=1)
             show_mask = np.concatenate((h1_axis, h2_axis), axis=0) 
+            lane_concat = np.concatenate((white_lane_mask, yellow_mask))
 
             cv2.imshow('img',show_img)
             cv2.imshow('info',show_mask)
+            cv2.imshow('Lane Mask', lane_concat)
             key = cv2.waitKey(1)
             # if key == ord('w'):
             #     cv2.imwrite('./obstacle_frame.jpg', frame)
