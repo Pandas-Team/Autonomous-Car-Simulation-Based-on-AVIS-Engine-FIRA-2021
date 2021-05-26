@@ -1,0 +1,10 @@
+*.pyc
+**/__pycache__/
+extra/outputs
+extra/*png
+extra/*npy
+outputs/
+outputs/*
+
+*.npy
+*.png
