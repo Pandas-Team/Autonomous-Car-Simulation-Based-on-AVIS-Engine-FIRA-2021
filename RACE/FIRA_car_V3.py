@@ -34,11 +34,11 @@ slope = 1
 debug_mode = True
 #control part
 kp = 1
-ki = 0
+ki = 0.5
 kd = 0
-
+angle = 0
 previous_error = 0
-integral = 0
+integral = 0.0
 steer = 0
 dt = 0.05
 sensors = [1500,1500,1500]
@@ -46,17 +46,19 @@ position = 'right'
 #sleep for 3 second to make sure that client connected to the simulator 
 time.sleep(3)
 time1 = time.time()
+error = 0
+
 try:
     while(True):  
-        if ((sensors[2]!=1500 or sensors[1]!=1500) and (position=='right')):
-            error = REFRENCE - SECOND_PXL 
+        if ((sensors[0]!=1500 or sensors[1]!=1500) and (position=='right')):
+            error = (REFRENCE - SECOND_PXL) * (0.2) + 0.8 * error
 
-        elif ((sensors[0]!=1500 or sensors[1]!=1500) and (position=='left')):
-            error = REFRENCE - SECOND_PXL 
+        elif ((sensors[2]!=1500 or sensors[1]!=1500) and (position=='left')):
+            error = (REFRENCE - SECOND_PXL ) * (0.2) + 0.8 * error
 
         else:
             error = REFRENCE - CURRENT_PXL 
-
+        # error = - angle
         integral = integral + error * dt    
         # if (ki * integral) > 10:
         #     integral = 10/ki
@@ -79,10 +81,8 @@ try:
             
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             hsv_frame = cv2.medianBlur(hsv_frame, 7)
-            hsv_frame = cv2.medianBlur(hsv_frame, 5)
-            hsv_frame = cv2.medianBlur(hsv_frame, 3)
 
-            mask = cv2.inRange(hsv_frame, np.array([100,8,27]), np.array([117,50,52]))
+            mask = cv2.inRange(hsv_frame, np.array([88,9,22]), np.array([135,47,58]))
             mask[0:110,:]=0
             points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             sorted_points = sorted(points, key=len)
@@ -148,6 +148,27 @@ try:
         print(f'Current : {CURRENT_PXL}')
         print(f'Second : {SECOND_PXL}')
         print(f'Error : {error}')
+        print(f'Steer : {steer}')
+        
+        try:
+            img_where = np.argwhere(yellow_mask)
+            x = img_where[:, 1]
+            y = 255 - img_where[:, 0]
+            out = interval_avg(x,y)
+            out[0] = out[0][~np.isnan(out[0])]
+            out[1] = out[1][~np.isnan(out[1])]
+
+            dx = np.gradient(out[0])
+            dy = np.gradient(out[1])
+            dy_dx = dy / dx
+            angles = np.rad2deg(np.arctan(dy_dx))
+            # angle = 55 - np.mean(angles)
+            angle = angles[-1] - angles[0]
+            print(f'Angle : {angle}')
+        except : pass
+        # plt.plot(x[::], y[::])
+        # plt.xlim([0, 255])
+        # plt.ylim([0,255])
 
         # SECOND_PXL_list.append(SECOND_PXL)
         # CURRENT_PXL_list.append(CURRENT_PXL)
@@ -164,18 +185,4 @@ try:
 finally:
 
     car.stop()
-    
-    # position_list = np.array(position_list)
-    # SECOND_PXL_list = np.array(SECOND_PXL_list)
-    # CURRENT_PXL_list = np.array(CURRENT_PXL_list)
-    # steer_list = np.array(steer_list)
-    # logged_data[columns[0]] = position_list
-    # logged_data[columns[1]] = SECOND_PXL_list
-    # logged_data[columns[2]] = CURRENT_PXL_list
-    # logged_data[columns[3]] = steer_list
-    # logged_data.to_excel('Output.xlsx')
 
-    # np.save('Second.npy', SECOND_PXL_list)
-    # np.save('Current.npy', CURRENT_PXL_list)
-    # np.save('Steer.npy', steer_list)
-    # np.save('Position.npy', position)
