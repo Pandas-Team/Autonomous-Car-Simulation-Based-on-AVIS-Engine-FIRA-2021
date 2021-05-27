@@ -166,4 +166,36 @@ def find_position(white_where, yellow_where):
     elif (white_where < 0) and (yellow_where < 0):
         pos = 4
     return pos
+
+def car_status(actual_where, sensors):
+    rounded_where = int(np.round(actual_where))
+    if rounded_where == 3:
+        if (sensors[1] == 1500) and (sensors[2] == 1500) :
+            print("clear")
+            return 1
+
+        elif sensors[1] != 1500 or (sensors[2] != 1500):
+            print('obstacle on right, turn left')
+            return 2
+    
+
+    elif rounded_where == 2:
+        if (sensors[2] == 1500) and (sensors[1] == 1500) :
+            print('Clear, go back to right')
+
+            return 3
+        elif (sensors[1] != 1500):
+            print('Obstacle Ahead')
+
+            return 4
+
+
+    elif rounded_where == 1:
+        pass
+
+    elif rounded_where == 4:
+        pass
+
+    
+
     

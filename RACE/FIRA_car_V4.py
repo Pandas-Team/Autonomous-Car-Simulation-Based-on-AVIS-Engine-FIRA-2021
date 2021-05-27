@@ -9,7 +9,7 @@ from time import sleep
 import pandas as pd
 #Calling the class
 car = AVISEngine.car()
-
+np.seterr(all="ignore")
 LOGGING = False
 #connecting to the server (Simulator)
 car.connect("127.0.0.1", 25001)
@@ -47,11 +47,15 @@ position = 'right'
 time.sleep(3)
 time1 = time.time()
 error = 0
+MIDDLE_RED = 140 
 where_yellow = 1 # 1 for right, 0 for left
 where_white = -1
 epsilon = 1e-5
 where_avg = 0.1
 pos = 3
+sensors_array = np.array([1500,1500,1500])
+car_mode = 1 #right and clear
+
 try:
     while(True):  
         # if ((sensors[0]!=1500 or sensors[1]!=1500) and (position=='right')):
@@ -69,7 +73,11 @@ try:
         # derivative = (error - previous_error) / dt
 
         # steer = -(kp * error + ki * integral + kd * derivative)
-        # steer = -(kp * error)
+
+        # if car_mode == 1:
+        steer = (kp * error)
+        # if car_mode == 2:
+            # steer = -100
         # print(steer)
         
         counter = counter + 1
@@ -99,23 +107,34 @@ try:
             obstacle_res = obstacle_mask
             # obstacle_res = cv2.bitwise_or(obstacle_mask, obstacle_mask2)
             
+            sensors_array = where_avg * (np.array(sensors)) + (1-where_avg) * sensors_array
+            sensors_array_rounded = np.round(sensors_array , -2)
             yellow_mask = cv2.inRange(hsv_frame, np.array([28,115,154]), np.array([31,180,255]))
             yellow_left =  yellow_mask[:,:128]
             yellow_right = yellow_mask[:,128:]
-            left_score =   yellow_left.mean()
-            right_score =  yellow_right.mean()
-            where_yellow =  where_avg * (right_score - left_score ) / (left_score + right_score + epsilon) + (1-where_avg) * where_yellow
+            yellow_left_score =   yellow_left.mean()
+            yellow_right_score =  yellow_right.mean()
+            where_yellow =  where_avg * (yellow_right_score - yellow_left_score ) / (yellow_left_score + yellow_right_score + epsilon) + (1-where_avg) * where_yellow
+            where_yellow = np.nan_to_num(where_yellow)
 
             white_line_mask = cv2.inRange(hsv_frame, np.array([0, 0, 210]), np.array([51,18,255]))
             white_line_mask[0:100] = 0 #Apply ROI
             white_left = white_line_mask[:,:128]
             white_right = white_line_mask[:,128:]
-            left_score = white_left.mean()
-            right_score = white_right.mean()
-            where_white =  where_avg * (right_score - left_score ) / (left_score + right_score + epsilon) + (1-where_avg) * where_white
+            white_left_score = white_left.mean()
+            white_right_score = white_right.mean()
+            where_white =  where_avg * (white_right_score - white_left_score ) / (white_left_score + white_right_score + epsilon) + (1-where_avg) * where_white
+            where_white = np.nan_to_num(where_white)
             pos = where_avg * find_position(where_white, where_yellow)  + (1-where_avg) * pos
 
             lane_mask = cv2.bitwise_or(yellow_mask, white_line_mask)
+            yellow_test = np.mean(np.where(yellow_mask[120:150,:]>0), axis=1)[1]
+            white_test = np.mean(np.where(white_line_mask[120:150,:]>0), axis=1)[1]
+            yellow_test = np.nan_to_num(yellow_test)
+            white_test = np.nan_to_num(white_test)
+
+            middle_test = (yellow_test + white_test) / 2
+            error = middle_test - MIDDLE_RED
 
 
             # points, _ = cv2.findContours(obstacle_res, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -168,14 +187,30 @@ try:
             #     cv2.imwrite('./obstacle_frame.jpg', frame)
         # previous_error = error
         # sleep(dt)
-        os.system('cls')
+        
         # print(f'Current : {CURRENT_PXL}')
         # print(f'Second : {SECOND_PXL}')
         # print(f'Error : {error}')
         # print(f'Steer : {steer}')
-        print(f'Where Yellow : {np.round(where_yellow , 2)}')
-        print(f'Where White : {np.round(where_white, 2)}')
-        print(f'Actual Where : {np.round(pos,2)}')
+        try :
+
+            os.system('cls')
+            # print(f'Where Yellow : {np.round(where_yellow , 2)}')
+            # print(f'Where White : {np.round(where_white, 2)}')
+            print(f'Actual Where : {np.round(pos,2)}')
+            # print(f'Yellow Test : {yellow_test}')
+            # print(f'White Test : {white_test}')
+            # print(f'Middle Test : {middle_test}')
+            # print(f'Steer : {steer}')
+            car_mode = car_status(pos, sensors_array_rounded)
+            print(sensors_array_rounded)
+            # print(f'white_left_score : {white_left_score}')
+            # print(f'white_right_score : {white_right_score}')
+            # print(f'yellow_left_score : {yellow_left_score}')
+            # print(f'yellow_right_score : {yellow_right_score}')
+        except: pass
+
+        # print()
         
         try:
             img_where = np.argwhere(yellow_mask)
@@ -191,7 +226,8 @@ try:
             angles = np.rad2deg(np.arctan(dy_dx))
             # angle = 55 - np.mean(angles)
             angle = angles[-1] - angles[0]
-            print(f'Angle : {angle}')
+            # print(f'Angle : {angle}')
+
         except : pass
         # plt.plot(x[::], y[::])
         # plt.xlim([0, 255])
