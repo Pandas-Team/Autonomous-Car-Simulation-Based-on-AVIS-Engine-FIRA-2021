@@ -180,7 +180,7 @@ def car_status(actual_where, sensors):
     
 
     elif rounded_where == 2:
-        if (sensors[2] == 1500) and (sensors[1] == 1500) :
+        if (sensors[0] == 1500) and (sensors[1] == 1500) :
             print('Clear, go back to right')
 
             return 3
@@ -197,5 +197,6 @@ def car_status(actual_where, sensors):
         pass
 
     
+# def turn_left(counter):
 
     

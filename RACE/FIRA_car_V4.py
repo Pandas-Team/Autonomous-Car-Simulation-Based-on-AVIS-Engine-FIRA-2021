@@ -33,7 +33,7 @@ counter = 0
 slope = 1
 debug_mode = True
 #control part
-kp = 1
+kp = 1.2
 ki = 0.5
 kd = 0
 angle = 0
@@ -58,31 +58,59 @@ car_mode = 1 #right and clear
 
 try:
     while(True):  
-        # if ((sensors[0]!=1500 or sensors[1]!=1500) and (position=='right')):
-        #     error = (REFRENCE - SECOND_PXL) * (0.2) + 0.8 * error
 
-        # elif ((sensors[2]!=1500 or sensors[1]!=1500) and (position=='left')):
-        #     error = (REFRENCE - SECOND_PXL ) * (0.2) + 0.8 * error
-
-        # else:
-        #     error = REFRENCE - CURRENT_PXL 
         # error = - angle
         # integral = integral + error * dt    
         # if (ki * integral) > 10:
         #     integral = 10/ki
         # derivative = (error - previous_error) / dt
 
-        # steer = -(kp * error + ki * integral + kd * derivative)
+        # steer = (kp * error + ki * integral + kd * derivative)
 
-        # if car_mode == 1:
         steer = (kp * error)
+        # if np.round(pos) == 1:
+        #     error = (2 - pos ) * 30
+        #     steer = (kp * error)
+        # elif np.round(pos) == 4:
+        #     steer = -40
+        if (car_mode == 1) :#or (car_mode == 3):
+            turn_right_error = 40
+            steer = (kp * error)
+
+        elif (car_mode == 2):
+            turn_right_error = 40
+            error =  - 1.3 * (1500 - sensors_array[1]) + 0.5 * (1500 - sensors_array[2])
+            steer =  (0.1 * error)
+        elif (car_mode == 3):
+            turn_right_error = turn_right_error - 1
+            error = turn_right_error
+            steer = (kp * error)
+        elif (np.round(pos) == 1):
+            steer = (+20)
+
+
+
+        # else: 
+        #     error = 3000 - sensors_array[1] - sensors_array[2] 
+        #     steer = - (0.05 * error) 
+
+        # elif (pos < 2.5 or (car_mode is None)) :
+        #     steer = +45
+        # elif car_mode == 2:
+        #     steer = -45
+        # 
+
+        # if (np.round(pose) == 3): #or (car_mode == 3):
+        #     steer = (kp * error)
         # if car_mode == 2:
-            # steer = -100
+        #     steer = -30
+        # if np.round(pose) == 3 or (car_mode is None):
+        #     steer = +30
         # print(steer)
         
         counter = counter + 1
         
-        car.setSpeed(60)
+        car.setSpeed(100)
         car.setSteering(steer)
 
         car.getData()
@@ -94,13 +122,6 @@ try:
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             hsv_frame = cv2.medianBlur(hsv_frame, 7)
 
-            # mask = cv2.inRange(hsv_frame, np.array([88,9,22]), np.array([135,47,58]))
-            # mask[0:110,:]=0
-            # points, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            # sorted_points = sorted(points, key=len)
-
-            # right_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-1]], color=(255))
-            # left_lane_mask = cv2.fillPoly(np.zeros((256,256)), pts =[sorted_points[-2]], color=(255))
             obstacle_mask = cv2.inRange(frame, np.array([70,4,93]), np.array([115,16,150]))
             
             # obstacle_mask2 = cv2.inRange(frame, np.array([104,88,77]), np.array([255,211,93]))
@@ -115,7 +136,7 @@ try:
             yellow_left_score =   yellow_left.mean()
             yellow_right_score =  yellow_right.mean()
             where_yellow =  where_avg * (yellow_right_score - yellow_left_score ) / (yellow_left_score + yellow_right_score + epsilon) + (1-where_avg) * where_yellow
-            where_yellow = np.nan_to_num(where_yellow)
+            where_yellow = np.nan_to_num(where_yellow, nan = 1)
 
             white_line_mask = cv2.inRange(hsv_frame, np.array([0, 0, 210]), np.array([51,18,255]))
             white_line_mask[0:100] = 0 #Apply ROI
@@ -137,45 +158,7 @@ try:
             error = middle_test - MIDDLE_RED
 
 
-            # points, _ = cv2.findContours(obstacle_res, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            # sorted_points = sorted(points, key=len)
-            # try:
-            #     if cv2.contourArea(sorted_points[-1])>25:
-            #         x,y,w,h = cv2.boundingRect(sorted_points[-1])
-            #         mean_obstacle = np.mean(np.where(obstacle_res[y:y+h,x:x+w]>0), axis=1)[1] 
-
-            #         yellow_roi = np.mean(np.where(yellow_mask[y:y+h, :]>0), axis=1)[1] 
-
-            #         if mean_obstacle<yellow_roi:
-            #             print('obstacle is on left')
-            #         else:
-            #             print('obstacle is on right')
-
-            #         frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
-            # except:
-            #     pass
-            
-
-            # CURRENT_PXL = np.mean(np.where(right_lane_mask[120:150,:]>0), axis=1)[1]
-            # SECOND_PXL = np.mean(np.where(left_lane_mask[120:150,:]>0), axis=1)[1]
-
-            # if np.isnan(CURRENT_PXL): CURRENT_PXL = 128
-            # if np.isnan(SECOND_PXL): SECOND_PXL = 128
-
-            # direction_s,slope = detect_yellow_line(frame)
-
-            # if slope<0:
-            #     position = 'left'
-            # else:
-            #     position = 'right'
-            
-            # cv2.putText(direction_s, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-            
-            # ImShow
-            # show_img = np.concatenate((frame, direction_s), axis=1)
-            # h1_axis = np.concatenate((left_lane_mask, right_lane_mask), axis=1)
-            # h2_axis = np.concatenate((obstacle_res, yellow_mask), axis=1)
-            # show_mask = np.concatenate((h1_axis, h2_axis), axis=0) 
+      
             lane_concat = np.concatenate((white_line_mask, yellow_mask))
 
             # cv2.imshow('img',show_img)
@@ -183,26 +166,20 @@ try:
             cv2.imshow('Lane Mask', lane_concat)
             cv2.imshow("Lane mask 2 ", lane_mask)
             key = cv2.waitKey(1)
-            # if key == ord('w'):
-            #     cv2.imwrite('./obstacle_frame.jpg', frame)
-        # previous_error = error
-        # sleep(dt)
-        
-        # print(f'Current : {CURRENT_PXL}')
-        # print(f'Second : {SECOND_PXL}')
-        # print(f'Error : {error}')
-        # print(f'Steer : {steer}')
+
         try :
 
             os.system('cls')
-            # print(f'Where Yellow : {np.round(where_yellow , 2)}')
-            # print(f'Where White : {np.round(where_white, 2)}')
+            print(f'Counter : {counter}')
+            print(f'Where Yellow : {np.round(where_yellow , 2)}')
+            print(f'Where White : {np.round(where_white, 2)}')
             print(f'Actual Where : {np.round(pos,2)}')
             # print(f'Yellow Test : {yellow_test}')
             # print(f'White Test : {white_test}')
             # print(f'Middle Test : {middle_test}')
-            # print(f'Steer : {steer}')
+            print(f'Steer : {steer}')
             car_mode = car_status(pos, sensors_array_rounded)
+            print(f"Car Mode : ", car_mode)
             print(sensors_array_rounded)
             # print(f'white_left_score : {white_left_score}')
             # print(f'white_right_score : {white_right_score}')
@@ -224,26 +201,12 @@ try:
             dy = np.gradient(out[1])
             dy_dx = dy / dx
             angles = np.rad2deg(np.arctan(dy_dx))
-            # angle = 55 - np.mean(angles)
-            angle = angles[-1] - angles[0]
-            # print(f'Angle : {angle}')
+            angle = 55 - np.mean(angles)
+            # angle = angles[-1] - angles[0]
+            print(f'Angle : {angle}')
 
-        except : pass
-        # plt.plot(x[::], y[::])
-        # plt.xlim([0, 255])
-        # plt.ylim([0,255])
-
-        # SECOND_PXL_list.append(SECOND_PXL)
-        # CURRENT_PXL_list.append(CURRENT_PXL)
-        # steer_list.append(steer)
-        # position_list.append(position)
-        if LOGGING : 
-            data = [position , SECOND_PXL, CURRENT_PXL, steer]
-            new_row = pd.Series(index = columns, data = data)
-            logged_data = logged_data.append(new_row,ignore_index=True)
-            logged_data.to_excel('Output.xlsx')
-
-        
+        except : 
+            angle = angle        
         
 finally:
 
