@@ -125,7 +125,6 @@ def detect_yellow_line(frame):
 
 def lane_change_to_left(car,yellow_slope):
     while yellow_slope > -0.1:
-        
         car.setSteering(-50)
 
 def lane_change_to_right(yellow_slope):

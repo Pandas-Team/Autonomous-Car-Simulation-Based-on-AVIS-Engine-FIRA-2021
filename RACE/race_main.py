@@ -40,7 +40,7 @@ counter = 0
 slope = 1
 debug_mode = True
 #control part
-kp = 1
+kp = 2
 ki = 0.2
 kd = 0.2
 previous_error = 0
@@ -54,30 +54,12 @@ time.sleep(3)
 time1 = time.time()
 try:
     while(True):  
-        if(time.time()-time1)>2:
-            if (position=='left'):
-                lane_change_to_right()   
-        print(sensors)
-        if ((sensors[2]<1500 or sensors[1]<1500) and (position=='right') and (mean_obstacle>yellow_roi) ):
-            error = (REFRENCE - SECOND_PXL)
-            time1 = time.time()
-
-        elif ((sensors[0]<1500 or sensors[1]<1500) and (position=='left') and (mean_obstacle>yellow_roi) ):
-            error = (REFRENCE - SECOND_PXL)
-            time1 = time.time()
-        else:
-            error = REFRENCE - CURRENT_PXL 
-
-        steer = -(kp * error)        
-        counter = counter + 1
-        
         car.setSpeed(60)
-        car.setSteering(int(steer))
-
+        car.setSteering(0)
         car.getData()
-
         if(counter > 4):
             # getting data
+            car.getData()
             sensors = car.getSensors() 
             frame = car.getImage()
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -85,12 +67,11 @@ try:
 
             mask = cv2.inRange(frame, np.array([0,0,0]), np.array([60,45,40]))
             mask = cv2.medianBlur(mask, 5)
-            cv2.imshow('lane mask', mask)
             # mask[0:110,:]=0
             points, _ = cv2.findContours(mask[150:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             areas = []
             for i in range(len(points)):
-                areas.append(cv2.drawContours(np.zeros((60,256)), points, i, 255, -1))
+                areas.append(cv2.drawContours(np.zeros((50,256)), points, i, 255, -1))
             areas = np.array(areas)
             sorted_areas = np.argsort(areas.sum(axis = (1,2)))
             try:
@@ -98,39 +79,12 @@ try:
                 left_lane_mask = areas[sorted_areas[-2],:,:]
             except:
                 pass
-            obstacle_mask = cv2.inRange(frame, np.array([70,4,93]), np.array([115,16,150]))
-            # obstacle_mask2 = cv2.inRange(frame, np.array([104,88,77]), np.array([255,211,93]))
-            obstacle_res = obstacle_mask
-            # obstacle_res = cv2.bitwise_or(obstacle_mask, obstacle_mask2)
             
-            yellow_mask = cv2.inRange(hsv_frame, np.array([28,115,154]), np.array([31,180,255]))
-
-
-            points, _ = cv2.findContours(obstacle_res, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            sorted_points = sorted(points, key=len)
-            try:
-                if cv2.contourArea(sorted_points[-1])>25:
-                    x,y,w,h = cv2.boundingRect(sorted_points[-1])
-                    mean_obstacle = np.mean(np.where(obstacle_res[y:y+h,x:x+w]>0), axis=1)[1] 
-
-                    yellow_roi = np.mean(np.where(yellow_mask[y:y+h, :]>0), axis=1)[1] 
-
-                    if mean_obstacle<yellow_roi:
-                        print('obstacle is on left')
-                    else:
-                        print('obstacle is on right')
-
-                    frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
-            except:
-                pass
-            
-
             CURRENT_PXL = np.mean(np.where(right_lane_mask>0), axis=1)[1]
             SECOND_PXL = np.mean(np.where(left_lane_mask>0), axis=1)[1]
 
             if np.isnan(CURRENT_PXL): CURRENT_PXL = 128
             if np.isnan(SECOND_PXL): SECOND_PXL = 128
-
 
             direction_s,slope = detect_yellow_line(frame)
 
@@ -142,18 +96,52 @@ try:
             yellow_mask = cv2.inRange(hsv_frame, np.array([28,115,154]), np.array([31,180,255]))
             YELLOW_PXL = np.mean(np.where(yellow_mask[140:190,:]>0), axis=1)[1]
             if np.isnan(YELLOW_PXL): YELLOW_PXL = 128
-            print(YELLOW_PXL)
             if YELLOW_PXL>128:
                 position = 'left'
             else:
                 position = 'right'
 
+            # obstacle
+            obstacle_mask = cv2.inRange(hsv_frame, np.array([90,5,125]), np.array([110,20,155]))
+            points, _ = cv2.findContours(obstacle_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            sorted_points = sorted(points, key=len)
+            try:
+                if cv2.contourArea(sorted_points[-1])>10:
+                    x,y,w,h = cv2.boundingRect(sorted_points[-1])
+                    mean_obstacle = x + w//2
+                    # frame = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+                    # if mean_obstacle<YELLOW_PXL:
+                    #     print('obstacle is on left')
+                    # else:
+                    #     print('obstacle is on right')
+            except:
+                pass
+
+            # control
+            if(time.time()-time1)>1:
+                if (position=='left'):
+                    lane_change_to_right()   
+
+            error = REFRENCE - CURRENT_PXL 
+            if ((sensors[2]<1500 or sensors[1]<1500) and (position=='right') and (mean_obstacle>YELLOW_PXL)):
+                error = (REFRENCE - SECOND_PXL)
+                time1 = time.time()
+
+            elif ((sensors[0]<1500 or sensors[1]<1500) and (position=='left') and (mean_obstacle<YELLOW_PXL)):
+                error = (REFRENCE - SECOND_PXL)
+                time1 = time.time()
+            
+            steer = -(kp * error)      
+            car.setSpeed(60)
+            car.setSteering(int(steer))
+            
+            # display
             cv2.putText(direction_s, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
             frame = cv2.rectangle(frame,(0,150),(256,200),(0,255,255),1)
             # ImShow
             show_img = np.concatenate((frame, direction_s), axis=1)
             h1_axis = np.concatenate((left_lane_mask, right_lane_mask), axis=1)
-            h2_axis = np.concatenate((obstacle_res, yellow_mask), axis=1)
+            h2_axis = np.concatenate((obstacle_mask, yellow_mask), axis=1)
             show_mask = np.concatenate((h1_axis, h2_axis), axis=0) 
 
             cv2.imshow('img',show_img)
@@ -162,14 +150,19 @@ try:
             if key == ord('w'):
                 np.save('masks.npy', show_mask)
                 cv2.imwrite('./race_frame.png', frame)
-        previous_error = error
-        # sleep(dt)
-        os.system('cls')
-        print(f'Current : {CURRENT_PXL}')
-        print(f'Second : {SECOND_PXL}')
-        print(f'Error : {error}')
-        print(f'Mean Obstacle : {mean_obstacle}')
-        print(position)
+            
+        
+
+            os.system('cls')
+            print(f'Current : {CURRENT_PXL}')
+            print(f'Second : {SECOND_PXL}')
+            print(f'Error : {error}')
+            print(f'Steer : {steer}')
+            print(f'Yellow line : {YELLOW_PXL}')
+            print(f'Mean Obstacle : {mean_obstacle}')
+            print(f'Position : {position}')
+
+        counter = counter + 1
 
         # SECOND_PXL_list.append(SECOND_PXL)
         # CURRENT_PXL_list.append(CURRENT_PXL)
