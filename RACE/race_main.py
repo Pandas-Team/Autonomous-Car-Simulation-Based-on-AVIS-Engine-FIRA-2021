@@ -8,10 +8,15 @@ import matplotlib.pyplot as plt
 from race_utils import *
 from time import sleep
 np.seterr(all="ignore")
-
+def lane_change_to_right():
+    time1 = time.time()
+    while((time.time()-time1)<0.8):
+        car.getData()
+        car.setSteering(+50)
 #Calling the class
 car = AVISEngine.car()
-
+mean_obstacle = 0
+yellow_roi = 0
 LOGGING = False
 #connecting to the server (Simulator)
 car.connect("127.0.0.1", 25001)
@@ -49,13 +54,17 @@ time.sleep(3)
 time1 = time.time()
 try:
     while(True):  
+        if(time.time()-time1)>2:
+            if (position=='left'):
+                lane_change_to_right()   
         print(sensors)
-        if ((sensors[2]<1500 or sensors[1]<1500) and (position=='right')):
+        if ((sensors[2]<1500 or sensors[1]<1500) and (position=='right') and (mean_obstacle>yellow_roi) ):
             error = (REFRENCE - SECOND_PXL)
+            time1 = time.time()
 
-        elif ((sensors[0]<1500 or sensors[1]<1500) and (position=='left')):
+        elif ((sensors[0]<1500 or sensors[1]<1500) and (position=='left') and (mean_obstacle>yellow_roi) ):
             error = (REFRENCE - SECOND_PXL)
-
+            time1 = time.time()
         else:
             error = REFRENCE - CURRENT_PXL 
 
@@ -63,7 +72,7 @@ try:
         counter = counter + 1
         
         car.setSpeed(60)
-        car.setSteering(steer)
+        car.setSteering(int(steer))
 
         car.getData()
 
@@ -159,6 +168,7 @@ try:
         print(f'Current : {CURRENT_PXL}')
         print(f'Second : {SECOND_PXL}')
         print(f'Error : {error}')
+        print(f'Mean Obstacle : {mean_obstacle}')
         print(position)
 
         # SECOND_PXL_list.append(SECOND_PXL)
