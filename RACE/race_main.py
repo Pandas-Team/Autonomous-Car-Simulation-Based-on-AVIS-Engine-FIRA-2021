@@ -40,7 +40,7 @@ counter = 0
 slope = 1
 debug_mode = True
 #control part
-kp = 2
+kp = 3
 ki = 0.2
 kd = 0.2
 previous_error = 0
@@ -48,6 +48,8 @@ integral = 0
 steer = 0
 dt = 0.05
 sensors = [1500,1500,1500]
+sensors_array = np.array([1500,1500,1500])
+where_avg = 0.3
 position = 'right'
 #sleep for 3 second to make sure that client connected to the simulator 
 time.sleep(3)
@@ -61,6 +63,7 @@ try:
             # getting data
             car.getData()
             sensors = car.getSensors() 
+            sensors_array = np.round(where_avg * (np.array(sensors)) + (1-where_avg) * sensors_array, 1)
             frame = car.getImage()
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             hsv_frame = cv2.medianBlur(hsv_frame, 7)
@@ -68,15 +71,12 @@ try:
             mask = cv2.inRange(frame, np.array([0,0,0]), np.array([60,45,40]))
             mask = cv2.medianBlur(mask, 5)
             # mask[0:110,:]=0
-            points, _ = cv2.findContours(mask[150:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            areas = []
-            for i in range(len(points)):
-                areas.append(cv2.drawContours(np.zeros((50,256)), points, i, 255, -1))
-            areas = np.array(areas)
-            sorted_areas = np.argsort(areas.sum(axis = (1,2)))
+            lane_contours, _ = cv2.findContours(mask[150:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            areas = [cv2.contourArea(c) for c in lane_contours]
+            sorted_areas = np.argsort(areas)
             try:
-                right_lane_mask = areas[sorted_areas[-1],:,:]
-                left_lane_mask = areas[sorted_areas[-2],:,:]
+                right_lane_mask = cv2.drawContours(np.zeros((50,256)), lane_contours, sorted_areas[-1], 255, -1)
+                left_lane_mask = cv2.drawContours(np.zeros((50,256)), lane_contours, sorted_areas[-2], 255, -1)
             except:
                 pass
             
@@ -116,25 +116,58 @@ try:
                     #     print('obstacle is on right')
             except:
                 pass
+            
+            if (position=='left'):
+                if ((sensors_array[0]<1450 or sensors_array[1]<1450) and (mean_obstacle<YELLOW_PXL)):
+                    error = (REFRENCE - SECOND_PXL)
+                    time1 = time.time()
+                    steer = -(2 * kp * error)
+                    car.setSteering(int(steer))
 
+                elif(time.time()-time1)>2:
+                    car.setSteering(int(50))
+                
+                else:
+                    error = REFRENCE - CURRENT_PXL 
+                    steer = -(kp * error)
+                    car.setSteering(int(steer))
+                
+            else:
+                if ((sensors_array[2]<1450 or sensors_array[1]<1450) and (mean_obstacle>YELLOW_PXL)):
+                    error = (REFRENCE - SECOND_PXL)
+                    time1 = time.time()
+                    steer = -(2 * kp * error)
+                    car.setSteering(int(steer))
+                
+                else:
+                    error = REFRENCE - CURRENT_PXL 
+                    steer = -(kp * error)
+                    car.setSteering(int(steer))
+
+
+
+
+            '''
             # control
-            if(time.time()-time1)>1:
+            if(time.time()-time1)>1.5:
                 if (position=='left'):
                     lane_change_to_right()   
 
             error = REFRENCE - CURRENT_PXL 
-            if ((sensors[2]<1500 or sensors[1]<1500) and (position=='right') and (mean_obstacle>YELLOW_PXL)):
+            if ((sensors_array[2]<1450 or sensors_array[1]<1450) and (position=='right') and (mean_obstacle>YELLOW_PXL)):
                 error = (REFRENCE - SECOND_PXL)
                 time1 = time.time()
 
-            elif ((sensors[0]<1500 or sensors[1]<1500) and (position=='left') and (mean_obstacle<YELLOW_PXL)):
+            elif ((sensors_array[0]<1450 or sensors_array[1]<1450) and (position=='left') and (mean_obstacle<YELLOW_PXL)):
                 error = (REFRENCE - SECOND_PXL)
                 time1 = time.time()
             
             steer = -(kp * error)      
             car.setSpeed(60)
             car.setSteering(int(steer))
-            
+            '''
+            car.setSpeed(60)
+
             # display
             cv2.putText(direction_s, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
             frame = cv2.rectangle(frame,(0,150),(256,200),(0,255,255),1)
@@ -161,6 +194,7 @@ try:
             print(f'Yellow line : {YELLOW_PXL}')
             print(f'Mean Obstacle : {mean_obstacle}')
             print(f'Position : {position}')
+            print(sensors_array)
 
         counter = counter + 1
 
