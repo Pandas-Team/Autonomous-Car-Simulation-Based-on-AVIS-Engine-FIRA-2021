@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--image', type = str, default = 'urban_views.png' , help = 'Choose the name of the image you want.')
+parser.add_argument('--image', type = str, default = 'race_frame.png' , help = 'Choose the name of the image you want.')
 args = parser.parse_args()
 
 
@@ -44,7 +44,7 @@ while True:
     # hsv_frame = cv2.blur(hsv_frame,(6,6))
     mask = cv2.inRange(hsv_frame, lower, upper)
     # mask = cv2.GaussianBlur(mask , (7,7), 0)
-    # mask = cv2.medianBlur(mask , 7)
+    mask = cv2.medianBlur(mask , 5)
     result = cv2.bitwise_and(frame, frame, mask = mask)
 
 

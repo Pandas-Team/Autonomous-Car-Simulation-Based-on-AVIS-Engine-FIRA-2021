@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt 
 parser = argparse.ArgumentParser()
-parser.add_argument('--image', type = str, default = 'urban_views.png' , help = 'Choose the name of the image you want.')
+parser.add_argument('--image', type = str, default = 'race_views.png' , help = 'Choose the name of the image you want.')
 args = parser.parse_args()
 
 if 'npy' in args.image:
