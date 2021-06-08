@@ -73,20 +73,20 @@ try:
         #     steer = (kp * error)
         # elif np.round(pos) == 4:
         #     steer = -40
-        if (car_mode == 1) :#or (car_mode == 3):
-            turn_right_error = 40
-            steer = (kp * error)
+        # if not (car_mode in [2,3]) :#or (car_mode == 3):
+        #     turn_right_error = 40
+        #     steer = (kp * error)
 
-        elif (car_mode == 2):
-            turn_right_error = 40
-            error =  - 1.3 * (1500 - sensors_array[1]) + 0.5 * (1500 - sensors_array[2])
-            steer =  (0.1 * error)
-        elif (car_mode == 3):
-            turn_right_error = turn_right_error - 1
-            error = turn_right_error
-            steer = (kp * error)
-        elif (np.round(pos) == 1):
-            steer = (+20)
+        # elif (car_mode == 2):
+        #     turn_right_error = 40
+        #     error =  - 1.3 * (1500 - sensors_array[1]) + 0.5 * (1500 - sensors_array[2])
+        #     steer =  (0.1 * error)
+        # elif (car_mode == 3):
+        #     turn_right_error = turn_right_error - 1
+        #     error = turn_right_error
+        #     steer = (kp * error)
+        # elif (np.round(pos) == 1):
+        #     steer = (+20)
 
 
 
@@ -110,7 +110,7 @@ try:
         
         counter = counter + 1
         
-        car.setSpeed(100)
+        car.setSpeed(120)
         car.setSteering(steer)
 
         car.getData()
