@@ -1,6 +1,5 @@
 # @ 2020, Copyright Amirmohammad Zarif
 # Compatible with firasimulator version 1.0.1 or higher
-
 import AVISEngine
 import time
 import cv2
@@ -63,10 +62,10 @@ try:
             sensors_array = np.round(where_avg * (np.array(sensors)) + (1-where_avg) * sensors_array, 1)
             frame = car.getImage()
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            hsv_frame = cv2.medianBlur(hsv_frame, 11)
+            hsv_frame = cv2.medianBlur(hsv_frame, 7)
 
-            mask = cv2.inRange(hsv_frame, np.array([95,12,20]), np.array([180,157,51]))
-            mask = cv2.medianBlur(mask, 13)
+            mask = cv2.inRange(hsv_frame, np.array([90,12,20]), np.array([150,55,55]))
+            mask = cv2.medianBlur(mask, 5)
             # mask[0:110,:]=0
             lane_contours, _ = cv2.findContours(mask[130:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             areas = [cv2.contourArea(c) for c in lane_contours]

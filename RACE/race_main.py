@@ -1,5 +1,3 @@
-# @ 2020, Copyright Amirmohammad Zarif
-# Compatible with firasimulator version 1.0.1 or higher
 import AVISEngine
 import time
 import cv2
@@ -52,7 +50,7 @@ time.sleep(3)
 time1 = time.time()
 try:
     while(True):  
-        car.setSpeed(60)
+        car.setSpeed(80)
         car.setSteering(0)
         car.getData()
         if(counter > 4):
@@ -62,10 +60,10 @@ try:
             sensors_array = np.round(where_avg * (np.array(sensors)) + (1-where_avg) * sensors_array, 1)
             frame = car.getImage()
             hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            hsv_frame = cv2.medianBlur(hsv_frame, 7)
+            hsv_frame = cv2.medianBlur(hsv_frame, 11)
 
-            mask = cv2.inRange(hsv_frame, np.array([90,12,20]), np.array([150,55,55]))
-            mask = cv2.medianBlur(mask, 5)
+            mask = cv2.inRange(hsv_frame, np.array([95,12,20]), np.array([180,157,51]))
+            mask = cv2.medianBlur(mask, 13)
             # mask[0:110,:]=0
             lane_contours, _ = cv2.findContours(mask[130:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             areas = [cv2.contourArea(c) for c in lane_contours]
@@ -112,7 +110,9 @@ try:
                     car.setSteering(int(steer))
 
                 elif(time.time()-time1)>2:
-                    car.setSteering(int(50))
+                    error = (REFRENCE - SECOND_PXL)
+                    steer = -(2 * kp * error)
+                    car.setSteering(int(steer))
                 
                 else:
                     error = REFRENCE - CURRENT_PXL 
@@ -132,7 +132,7 @@ try:
                     car.setSteering(int(steer))
 
 
-            car.setSpeed(60)
+            car.setSpeed(80)
 
             # display
             cv2.putText(frame, position, (20,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
