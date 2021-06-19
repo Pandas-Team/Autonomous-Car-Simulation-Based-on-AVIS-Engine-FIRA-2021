@@ -47,7 +47,7 @@ position = 'right'
 time.sleep(3)
 time1 = time.time()
 error = 0
-MIDDLE_RED = 140 
+MIDDLE_REF = 140 
 where_yellow = 1 # 1 for right, 0 for left
 where_white = -1
 epsilon = 1e-5
@@ -155,7 +155,7 @@ try:
             white_test = np.nan_to_num(white_test)
 
             middle_test = (yellow_test + white_test) / 2
-            error = middle_test - MIDDLE_RED
+            error = middle_test - MIDDLE_REF
 
 
       

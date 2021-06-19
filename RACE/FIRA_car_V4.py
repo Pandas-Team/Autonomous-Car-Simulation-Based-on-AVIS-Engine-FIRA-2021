@@ -5,7 +5,7 @@ import time
 import cv2
 import numpy as np
 from functions import *
-from time import sleep
+from time import sleep, time
 import pandas as pd
 #Calling the class
 car = AVISEngine.car()
@@ -33,9 +33,9 @@ counter = 0
 slope = 1
 debug_mode = True
 #control part
-kp = 1.2
-ki = 0.5
-kd = 0
+kp = 1.01
+ki = 0.08
+kd = 0.1
 angle = 0
 previous_error = 0
 integral = 0.0
@@ -44,8 +44,8 @@ dt = 0.05
 sensors = [1500,1500,1500]
 position = 'right'
 #sleep for 3 second to make sure that client connected to the simulator 
-time.sleep(3)
-time1 = time.time()
+sleep(3)
+time1 = time()
 error = 0
 MIDDLE_RED = 140 
 where_yellow = 1 # 1 for right, 0 for left
@@ -55,19 +55,55 @@ where_avg = 0.1
 pos = 3
 sensors_array = np.array([1500,1500,1500])
 car_mode = 1 #right and clear
+t1 = 0
+TRACKBAR = False
+if TRACKBAR:
+    def nothing():
+        pass
+    cv2.namedWindow('Controls',cv2.WINDOW_NORMAL)
+    # cv2.namedWindow('kd',cv2.CV_WINDOW_AUTOSIZE)
+    # Creating trackbar for kernel size
+    cv2.createTrackbar('kp','Controls',0 ,200, nothing)
+    cv2.createTrackbar('ki','Controls',0, 200 ,nothing)
+    cv2.createTrackbar('kd','Controls',0, 200 ,nothing)
+    # kp = int(cv2.getTrackbarPos('kp','Controls')) / 100
+    # ki = int(cv2.getTrackbarPos('ki','Controls')) / 100
+    # kd = int(cv2.getTrackbarPos('kd','Controls')) / 100
+
 
 try:
     while(True):  
+        if TRACKBAR:
+            kp = (cv2.getTrackbarPos('kp','Controls')) / 100
+            ki = (cv2.getTrackbarPos('ki','Controls')) / 100
+            kd = (cv2.getTrackbarPos('kd','Controls')) / 100
+
+
 
         # error = - angle
-        # integral = integral + error * dt    
+
+        integral = integral + error * dt    
+        derivative = (error - previous_error) / dt
         # if (ki * integral) > 10:
-        #     integral = 10/ki
-        # derivative = (error - previous_error) / dt
+            # integral = 10/ki
+        steer = (kp * error + ki * integral + kd * derivative)
+        t1 = time()
+        
+        
+        
+# 
+        # if (car_mode == 3):
+        # turn_right_error = turn_right_error - 1
+        # error = turn_right_error
+        # steer = (kp * error)
+        # else :
+        #     turn_right_error = 40
+        #     steer = (kp * error) + ki * integral + kd * derivative
 
-        # steer = (kp * error + ki * integral + kd * derivative)
 
-        steer = (kp * error)
+
+
+        # steer = (kp * angle)
         # if np.round(pos) == 1:
         #     error = (2 - pos ) * 30
         #     steer = (kp * error)
@@ -116,6 +152,12 @@ try:
         car.getData()
 
         if(counter > 4):
+
+            if pos>2.8:
+                nan = 1
+            else:
+                nan = -1
+
             sensors = car.getSensors() 
             frame = car.getImage()
             
@@ -136,7 +178,7 @@ try:
             yellow_left_score =   yellow_left.mean()
             yellow_right_score =  yellow_right.mean()
             where_yellow =  where_avg * (yellow_right_score - yellow_left_score ) / (yellow_left_score + yellow_right_score + epsilon) + (1-where_avg) * where_yellow
-            where_yellow = np.nan_to_num(where_yellow, nan = 1)
+            where_yellow = np.nan_to_num(where_yellow, nan = nan)
 
             white_line_mask = cv2.inRange(hsv_frame, np.array([0, 0, 210]), np.array([51,18,255]))
             white_line_mask[0:100] = 0 #Apply ROI
@@ -149,12 +191,14 @@ try:
             pos = where_avg * find_position(where_white, where_yellow)  + (1-where_avg) * pos
 
             lane_mask = cv2.bitwise_or(yellow_mask, white_line_mask)
-            yellow_test = np.mean(np.where(yellow_mask[120:150,:]>0), axis=1)[1]
-            white_test = np.mean(np.where(white_line_mask[120:150,:]>0), axis=1)[1]
-            yellow_test = np.nan_to_num(yellow_test)
-            white_test = np.nan_to_num(white_test)
+            yellow_test = np.mean(np.where(yellow_mask[120:180,:]>0), axis=1)[1]
+            white_test = np.mean(np.where(white_line_mask[120:180,:]>0), axis=1)[1]
+            yellow_test = np.nan_to_num(yellow_test, nan = nan)
+            white_test = np.nan_to_num(white_test , nan = 128 * nan)
 
             middle_test = (yellow_test + white_test) / 2
+
+            previous_error = error
             error = middle_test - MIDDLE_RED
 
 
@@ -174,13 +218,17 @@ try:
             print(f'Where Yellow : {np.round(where_yellow , 2)}')
             print(f'Where White : {np.round(where_white, 2)}')
             print(f'Actual Where : {np.round(pos,2)}')
-            # print(f'Yellow Test : {yellow_test}')
-            # print(f'White Test : {white_test}')
-            # print(f'Middle Test : {middle_test}')
+            print(f'Yellow Test : {yellow_test}')
+            print(f'White Test : {white_test}')
+            print(f'Middle Test : {middle_test}')
             print(f'Steer : {steer}')
-            car_mode = car_status(pos, sensors_array_rounded)
-            print(f"Car Mode : ", car_mode)
-            print(sensors_array_rounded)
+            print(f'kp : {kp}')
+            print(f'ki : {ki}')
+            print(f'kd : {kd}')
+            # car_mode = car_status(pos, sensors_array_rounded)
+            # print(f"Car Mode : ", car_mode)
+            # print(sensors_array_rounded)
+
             # print(f'white_left_score : {white_left_score}')
             # print(f'white_right_score : {white_right_score}')
             # print(f'yellow_left_score : {yellow_left_score}')
@@ -204,10 +252,13 @@ try:
             angle = 55 - np.mean(angles)
             # angle = angles[-1] - angles[0]
             print(f'Angle : {angle}')
+            print(f'dt : {dt}')
 
         except : 
             angle = angle        
-        
+        t2 = time()
+        dt = t2 - t1  
+        where_avg = dt 
 finally:
 
     car.stop()

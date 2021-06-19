@@ -196,6 +196,9 @@ def car_status(actual_where, sensors):
     elif rounded_where == 4:
         pass
 
+    else:
+         return 3
+
     
 # def turn_left(counter):
 
