@@ -246,13 +246,13 @@ try:
             else:
                 position = 'right'
             
-            obs_yellow = np.mean(np.where(yellow_mask[50:150,:]>0), axis=1)[1]
+            obs_yellow = np.mean(np.where(yellow_mask[50:170,:]>0), axis=1)[1]
             obs_yellow = np.nan_to_num(obs_yellow, nan = 128)
 
             # obstacle
-            obstacle_mask = cv2.inRange(hsv_frame, np.array([90,5,110]), np.array([110,20,155]))
-            kernel = np.ones((1,1),np.uint8)
-            obstacle_mask = cv2.erode(obstacle_mask, kernel, iterations=2)
+            obstacle_mask = cv2.inRange(hsv_frame, np.array([95,0,95]), np.array([180,20,160]))
+            kernel = np.ones((2,2),np.uint8)
+            obstacle_mask = cv2.erode(obstacle_mask, kernel, iterations=1)
             kernel = np.ones((5,5),np.uint8)
             obstacle_mask = cv2.dilate(obstacle_mask, kernel, iterations=1)
             points, _ = cv2.findContours(obstacle_mask[50:200,:], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
