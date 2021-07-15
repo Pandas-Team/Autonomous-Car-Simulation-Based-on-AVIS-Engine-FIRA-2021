@@ -17,8 +17,9 @@ Example of code performance in the suburban environment:
 
 Example of Processes performed in the suburban environment:
 
+![102](https://user-images.githubusercontent.com/61683254/125802727-4a1de25a-7775-4671-85f8-cef16d98e5ff.png)
+![103](https://user-images.githubusercontent.com/61683254/125802731-1e843ab5-8602-4960-a672-c3e51a9e6b06.png)
 
-![photo_2021-07-15_17-43-59](https://user-images.githubusercontent.com/61683254/125801956-5a965041-86bc-42f0-b56e-5d85ab65934b.jpg)
 
 
 
@@ -35,8 +36,9 @@ Example of code performance in the urban environment:
 
 Example of Processes performed in the urban environment:
 
+![100](https://user-images.githubusercontent.com/61683254/125802743-715f0bbf-ecac-4b1b-a1e4-009db2c7c7d4.png)
+![104](https://user-images.githubusercontent.com/61683254/125802747-f303d43c-9c8d-4672-a53a-a9aa3d8600df.png)
 
-![photo_2021-07-15_17-43-49](https://user-images.githubusercontent.com/61683254/125801966-ea45f85a-efbb-4dd3-983a-d842b60b1334.jpg)
 
 
 ## Competition Result
