@@ -43,10 +43,10 @@ Examples of Processes performed in the urban environment:
 
 ## Competition Result
 In this competition, our team was able to achieve four ranks in different categories as follows:
+
 1. First place in the technical report
 2. Second place in race section (suburban)
 3. Third place in the urban sector
-
 4.Third place in the total competition
 
 [Results link](https://iran.firaworldcup.org/?leagues=autonomous-cars)
