@@ -15,7 +15,7 @@ Example of code performance in the suburban environment:
 
 
 
-Example of Processes performed in the suburban environment:
+Examples of Processes performed in the suburban environment:
 
 ![102](https://user-images.githubusercontent.com/61683254/125802727-4a1de25a-7775-4671-85f8-cef16d98e5ff.png)
 ![103](https://user-images.githubusercontent.com/61683254/125802731-1e843ab5-8602-4960-a672-c3e51a9e6b06.png)
@@ -34,7 +34,7 @@ Example of code performance in the urban environment:
 
 
 
-Example of Processes performed in the urban environment:
+Examples of Processes performed in the urban environment:
 
 ![100](https://user-images.githubusercontent.com/61683254/125802743-715f0bbf-ecac-4b1b-a1e4-009db2c7c7d4.png)
 ![104](https://user-images.githubusercontent.com/61683254/125802747-f303d43c-9c8d-4672-a53a-a9aa3d8600df.png)
@@ -47,6 +47,7 @@ In this competition, our team was able to achieve four ranks in different catego
 2. Second place in race section (suburban)
 3. Third place in the urban sector
 4.Third place in the total competition
+
 [Results link](https://iran.firaworldcup.org/?leagues=autonomous-cars)
 
 ### Contact us
